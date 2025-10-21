@@ -1,34 +1,60 @@
-name: Scrape Fundamentus
+name: Scrape + Deploy Pages (static)
 
 on:
   schedule:
-    - cron: "0 10,18 * * 1-5"  # 10:00 e 18:00 UTC em dias úteis (ajuste ao seu gosto)
-  workflow_dispatch: {}        # permite rodar manualmente
+    - cron: "0 10,18 * * 1-5" # dias úteis 10:00 e 18:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install deps
-        run: npm ci
+      - run: npm i
 
-      - name: Scrape
+      - name: Scrape Fundamentus
         env:
-          FUNDAMENTUS_COOKIE: ${{ secrets.FUNDAMENTUS_COOKIE }}
-        run: npm run scrape
+          FUNDAMENTUS_COOKIE: ${{ secrets.FUNDAMENTUS_COOKIE }} # opcional
+        run: node scrape.js
 
-      - name: Commit & push
+      - name: Ensure index + nojekyll
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/resultado.csv docs/resultado.html
-          git commit -m "Update snapshot" || echo "Nada para commitar"
-          git push
+          mkdir -p docs
+          [ -f docs/index.html ] || cat > docs/index.html <<'HTML'
+          <meta charset="utf-8">
+          <h1>fundamentus-proxy</h1>
+          <ul>
+            <li><a href="./resultado.html">resultado.html</a></li>
+            <li><a href="./resultado.csv">resultado.csv</a></li>
+          </ul>
+          HTML
+          touch docs/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
