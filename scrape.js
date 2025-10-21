@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-import cheerio from 'cheerio';
+import { load } from 'cheerio';
 
 const URL = 'https://www.fundamentus.com.br/resultado.php';
 
@@ -26,7 +26,7 @@ async function fetchHtml() {
 }
 
 function extractMainTable(html) {
-    const $ = cheerio.load(html);
+    const $ = load(html);
     // normalmente é a primeira grande tabela de resultados:
     const $table = $('table').first();
     if (!$table || $table.length === 0) throw new Error('Tabela não encontrada');

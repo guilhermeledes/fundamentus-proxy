@@ -1,14 +1,14 @@
-name: Scrape + Deploy Pages (static)
+name: Scrape + Deploy Pages (static, sem Jekyll)
 
 on:
   schedule:
-    - cron: "0 10,18 * * 1-5" # dias úteis 10:00 e 18:00 UTC
+    - cron: "0 10,18 * * 1-5"
   workflow_dispatch: {}
 
 permissions:
-  contents: write
   pages: write
   id-token: write
+  contents: read
 
 concurrency:
   group: "pages"
@@ -24,14 +24,14 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm i
+      - run: npm ci
 
-      - name: Scrape Fundamentus
+      - name: Rodar scraper
         env:
-          FUNDAMENTUS_COOKIE: ${{ secrets.FUNDAMENTUS_COOKIE }} # opcional
+          FUNDAMENTUS_COOKIE: ${{ secrets.FUNDAMENTUS_COOKIE }}  # opcional
         run: node scrape.js
 
-      - name: Ensure index + nojekyll
+      - name: Garantir index + .nojekyll
         run: |
           mkdir -p docs
           [ -f docs/index.html ] || cat > docs/index.html <<'HTML'
@@ -44,7 +44,7 @@ jobs:
           HTML
           touch docs/.nojekyll
 
-      - name: Upload artifact
+      - name: Upload artifact (docs/)
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs
