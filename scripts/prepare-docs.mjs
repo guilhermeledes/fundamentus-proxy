@@ -11,12 +11,9 @@ const html = `<!doctype html>
 <ul>
   <li><a href="./resultado.html">resultado.html</a></li>
   <li><a href="./resultado.csv">resultado.csv</a></li>
+  <li><a href="./resultado-clean.csv">resultado-clean.csv</a> (recomendado p/ Sheets)</li>
 </ul>
 `;
-
 fs.writeFileSync(path.join(outDir, "index.html"), html, "utf8");
-
-// desabilita Jekyll no GitHub Pages
 fs.writeFileSync(path.join(outDir, ".nojekyll"), "", "utf8");
-
 console.log("[prepare:docs] ok");

@@ -6,7 +6,7 @@
         "scrape": "node scrape.js",
         "prepare:docs": "node scripts/prepare-docs.mjs",
         "snapshot": "npm run scrape && npm run prepare:docs",
-        "publish": "npm run snapshot && git add docs/resultado.html docs/resultado.csv docs/index.html docs/.nojekyll && git commit -m \"Snapshot Fundamentus\" || echo Nada_para_commitar && git push"
+        "publish": "npm run snapshot && git add docs/* && git commit -m \"Snapshot Fundamentus\" || echo Nada_para_commitar && git push"
     },
     "dependencies": {
         "axios": "^1.7.7",
